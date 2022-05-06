@@ -111,7 +111,7 @@ import matlab.engine
 def predictSinusnoSinus(df):
     df = df.values.tolist()
     eng = matlab.engine.start_matlab()
-    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\2022\dataset\sinusnosinus.onnx", "cum")
+    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\models\sinusnosinus.onnx", "cum")
     for ele in df:
         A = matlab.double(ele, size = [300,1])
         SOFTMAX1000 = eng.cum(A,param)
@@ -123,7 +123,7 @@ def predictSinusnoSinus(df):
     
 def finalClassification(df):
     eng = matlab.engine.start_matlab()
-    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\2022\dataset\finalwdiff.onnx", "piss")
+    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\models\modelwdiff", "piss")
     A = matlab.double(df.values.tolist(), size = [300,1])
     SOFTMAX1000 = eng.piss(A,param)
     print(SOFTMAX1000)

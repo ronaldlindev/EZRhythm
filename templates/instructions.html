@@ -1,0 +1,8 @@
+{% extends 'base.html'%}
+{% block title %}Home{% endblock%}
+
+
+{% block content%}
+<h2>Please Place the ECG nodes (colored) according to the diagram, then connect the ECG device to power</h2>
+<img src="{{url_for('static', filename = 'instructions.jpg')}}" alt="Bruh">
+{% endblock%}

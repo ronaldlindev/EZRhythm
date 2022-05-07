@@ -1,6 +1,7 @@
 import paramiko
 from datetime import datetime
 from datetime import date
+import numpy as np
 start_time = datetime.now()
 
 
@@ -67,20 +68,13 @@ def highpass(Signal, cutoff, fs, order = 5):
     return signal.filtfilt(b, a, Signal)
 
 def fileToSegmentTodf():
-    data = pd.read_csv(fr'C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\files\2022-04-02.txt', header = None).values.tolist()
-    data = data[0]
-    
-    cleaned = [ x for x in data if isinstance(x, int)]
-    print(len(cleaned))
-    # for i in range(12):
-    #     cleaned += cleaned
-    #     print(len(cleaned))
+    # data = pd.read_csv(fr'C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\files\2022-04-02.txt', header = None).values.tolist()
+    # data = data[0]
+    # cleaned = [x for x in data if isinstance(x, int)]
+    cleaned = np.load("files/100_SIG_II.npy")
     
     print(f'file cleaned at {datetime.now()}')
     DenoisedECG = highpass(notch(cleaned, sampFreq = 128), cutoff = 1, fs = 128) # baseline wanderingremoval and powerline interfence removal
-    
-    plt.plot(DenoisedECG)
-    plt.show()
     peak_h = find_peaks(DenoisedECG, height = 0.25, distance = 6 )
     # print(peak_h[0])
     (cA, cD) = pywt.dwt(DenoisedECG, 'sym4', mode = 'zero') # returns approximation (cA) and detail (cD) coefficients.
@@ -102,62 +96,64 @@ def sinusExtractorandMedian(RRRandMidLabels):
     sinus = x[x.iloc[:,0] == 'S']
     sinusMedian = sinus.iloc[:,1:].median()
     sinusMedian = (sinusMedian - sinusMedian.min(axis=0)) / (sinusMedian.max(axis=0) - sinusMedian.min(axis=0)) # zero normalization?
-    plt.plot(sinusMedian.T)
-    plt.plot(x.iloc[0,:])
-    plt.show()
     return sinusMedian
 
 import matlab.engine
 def predictSinusnoSinus(df):
+    conversion = {0:'N', 1:'S'}
     df = df.values.tolist()
     eng = matlab.engine.start_matlab()
-    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\models\sinusnosinus.onnx", "cum")
-    for ele in df:
+    param = eng.importONNXFunction(r"models\sinusnosinus.onnx", "cum")
+    for ele in df:  
         A = matlab.double(ele, size = [300,1])
         SOFTMAX1000 = eng.cum(A,param)
         label = conversion[np.argmax(SOFTMAX1000[0][0])]
-        print(label)
+        # print(label)
         ele.insert(0,label)
     eng.close()
+
     return df
     
 def finalClassification(df):
+    df = df.values.tolist()
+    conversion = {0:'A', 1: 'B', 2: 'N', 3: 'Q', 4: 'S', 5: 'V'}
     eng = matlab.engine.start_matlab()
-    param = eng.importONNXFunction(r"C:\Users\YouConfusedYet\Desktop\ECG Webserver\webserver\webs\models\modelwdiff", "piss")
-    A = matlab.double(df.values.tolist(), size = [300,1])
-    SOFTMAX1000 = eng.piss(A,param)
-    print(SOFTMAX1000)
-    print(conversion[np.argmax(SOFTMAX1000[0][0])])
+    param = eng.importONNXFunction(r"models\finalwdiff.onnx", "piss")
+    for ele in df:
+        se = matlab.double([ele[300]])
+        data = matlab.double([ele[0:299]])
+        SOFTMAX1000 = eng.piss(se, data,param)
+        print(SOFTMAX1000)
+        label = conversion[np.argmax(SOFTMAX1000[0][0])]
+        print(label)
+        ele.insert(0, label)
     eng.close()
-    
+    return df
+
+
+from sklearn.metrics import mean_squared_error
+
 
 # # getfile()
-# df = fileToSegmentTodf()
-# # print(df.head())
-# # # df.to_hdf("bruh")
-# # print(plt.plot(df.values.tolist()[0])) 
-# # plt.show()  
-# conversion = {0:'N', 1:'S'}
-# l = predictSinusnoSinus(df)
-# print(l)
-# N = []
-# S = []
-# for ele in l:
-#     if ele[0] == 'S':
-#         S.append(ele)
-#     else: 
-#         N.append(ele)
-# for ele in S:
-#     plt.plot(ele)
-#     plt.title('S')
-#     plt.show()
-#     plt.clf()
-
-# for ele in N:
-#     plt.plot(ele)
-#     plt.title('N')
-#     plt.show()
-#     plt.clf()
+def full():
+    df = fileToSegmentTodf()
+    df = predictSinusnoSinus(df) # returns list
+    bruh = pd.DataFrame(df)
+    med = sinusExtractorandMedian(bruh)
+    bruht = bruh.apply(pd.to_numeric, errors = 'ignore')
+    drop_prev_labels = bruht.drop(bruht.columns[0], axis = 1)
+    l = []
+    sample = [0.0 for i in range(300)]
+    for index, row in drop_prev_labels.iterrows():
+                if med.isnull().values.any() == True:
+                    l.append(mean_squared_error(row.values.tolist()[100:200], sample[100:200]))
+                else:
+                    l.append(mean_squared_error(row.values.tolist()[100:200], med[100:200]))
+    drop_prev_labels.insert(300,301,l)
+    print(drop_prev_labels.head())
+    df = finalClassification(drop_prev_labels)
+    print(df.head)
+full()
 
 
 
@@ -166,4 +162,3 @@ end_time = datetime.now()
 print('Duration: {}'.format(end_time - start_time))
 
 
-# median = sinusExtractorandMedian(df)

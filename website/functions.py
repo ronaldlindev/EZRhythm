@@ -131,15 +131,15 @@ def finalClassification(df):
     eng.close()
     
 
-# getfile()
-df = fileToSegmentTodf()
-# print(df.head())
-# # df.to_hdf("bruh")
-# print(plt.plot(df.values.tolist()[0])) 
-# plt.show()  
-conversion = {0:'N', 1:'S'}
-l = predictSinusnoSinus(df)
-print(l)
+# # getfile()
+# df = fileToSegmentTodf()
+# # print(df.head())
+# # # df.to_hdf("bruh")
+# # print(plt.plot(df.values.tolist()[0])) 
+# # plt.show()  
+# conversion = {0:'N', 1:'S'}
+# l = predictSinusnoSinus(df)
+# print(l)
 # N = []
 # S = []
 # for ele in l:

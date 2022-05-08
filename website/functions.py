@@ -121,7 +121,7 @@ def finalClassification(df):
     param = eng.importONNXFunction(r"models\finalwdiff.onnx", "piss")
     for ele in df:
         se = matlab.double([ele[300]])
-        data = matlab.double([ele[0:299]])
+        data = matlab.double([ele[:300]])
         SOFTMAX1000 = eng.piss(se, data,param)
         print(SOFTMAX1000)
         label = conversion[np.argmax(SOFTMAX1000[0][0])]

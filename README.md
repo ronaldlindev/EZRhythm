@@ -1,1 +1,2 @@
-Please refer to the presentation (.pdf) for a summary of this project
+[Quad Chart] (Presentation/QuadChart)
+[Presentation] (Presentation/Slideshow))

@@ -1,2 +1,2 @@
-[Quad Chart] (Presentation/QuadChart)
-[Presentation] (Presentation/Slideshow))
+[Quad Chart](Presentation/QuadChart)
+[Presentation](Presentation/Slideshow))

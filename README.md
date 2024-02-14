@@ -1,8 +1,8 @@
 # EZ Rhythm: An arrhythmia population screening system based on CNNs and a novel technique, Patient Specific Morhpology Comparison (PSMC)
 ### refer to the below references for specifics
-[Quad Chart](Presentation/QuadChart)
+[Quad Chart](Presentation/QuadChart.png)
 
-[Presentation](Presentation/Slideshow)
+[Presentation](Presentation/Slideshow.pdf)
 
 ## Results
 
